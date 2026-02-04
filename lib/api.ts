@@ -1,13 +1,16 @@
 import axios from "axios";
 
-// 1. Added quotes around the URL
-const API_URL = "https://hackathon2phase3backend.vercel.app"; 
+// Backend API URL
+const API_URL = "https://hackathon2phase3backend.vercel.app";
 
 const api = axios.create({
   baseURL: `${API_URL}/api/v1`,
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 30000, // 30 second timeout
+  withCredentials: false, // Don't send cookies in cross-origin requests
+  validateStatus: (status) => status < 500, // Don't throw on 4xx errors
 });
 
 api.interceptors.request.use(
@@ -20,8 +23,6 @@ api.interceptors.request.use(
   },
   (error) => Promise.reject(error),
 );
-
-
 
 api.interceptors.response.use(
   (response) => response,
@@ -39,13 +40,14 @@ api.interceptors.response.use(
         const response = await axios.post(
           `${API_URL}/api/v1/auth/refresh`,
           null,
-          { params: { refresh_token: refreshToken } }
+          { params: { refresh_token: refreshToken } },
         );
 
-        const { access_token, refresh_token: new_refresh_token } = response.data;
+        const { access_token, refresh_token: new_refresh_token } =
+          response.data;
 
         localStorage.setItem("access_token", access_token);
-        
+
         // 3. Only update refresh token if the backend actually sent a new one
         if (new_refresh_token) {
           localStorage.setItem("refresh_token", new_refresh_token);
@@ -57,7 +59,7 @@ api.interceptors.response.use(
         // 4. Clear storage and redirect on failure
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
-        
+
         // Use a more robust check if you're in a SPA like React/Next.js
         if (typeof window !== "undefined") {
           window.location.href = "/login";
@@ -66,7 +68,7 @@ api.interceptors.response.use(
       }
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;
