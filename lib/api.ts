@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Aapka deployed backend URL
-const BASE_URL = 'https://hackathon2phase2backend.vercel.app/api/v1';
+const BASE_URL = 'https://hackathon2phase3backend.vercel.app/api/v1';
 
 const api = axios.create({
   baseURL: BASE_URL,
