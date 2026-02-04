@@ -36,7 +36,8 @@ export default function SignupPage() {
     } catch (err: any) {
       console.error(err);
       setError(
-        err.response?.data?.detail || "Signup failed. Please try again."
+        err.response?.data?.detail ||
+          `Signup failed: ${err.message}. (Target: ${api.defaults.baseURL})`,
       );
     } finally {
       setLoading(false);
