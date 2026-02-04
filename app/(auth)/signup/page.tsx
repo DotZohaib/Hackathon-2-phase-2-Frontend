@@ -26,19 +26,49 @@ export default function SignupPage() {
     }
 
     try {
-      await api.post("/auth/signup", {
+      const response = await api.post("/auth/signup", {
         email,
         username,
         password,
         confirm_password: confirmPassword,
       });
-      router.push("/login");
+
+      // Check if response is successful
+      if (response.status >= 200 && response.status < 300) {
+        router.push("/login");
+      } else {
+        // Handle error response
+        const errorMsg =
+          response.data?.detail || "Signup failed. Please try again.";
+        setError(errorMsg);
+      }
     } catch (err: any) {
-      console.error(err);
-      setError(
-        err.response?.data?.detail ||
-          `Signup failed: ${err.message}. (Target: ${api.defaults.baseURL})`,
-      );
+      console.error("Signup error:", err);
+
+      // Detailed error handling
+      if (err.code === "ECONNABORTED") {
+        setError(
+          "Request timeout. Please check your internet connection and try again.",
+        );
+      } else if (err.code === "ERR_NETWORK") {
+        setError(
+          "Network error. The backend server may not be accessible. Please try again later.",
+        );
+      } else if (err.response) {
+        // Server responded with error
+        const errorMsg =
+          err.response.data?.detail ||
+          `Server error: ${err.response.status} ${err.response.statusText}`;
+        setError(errorMsg);
+      } else if (err.request) {
+        // Request made but no response
+        setError(
+          "No response from server. Please check if the backend is running and try again.",
+        );
+      } else {
+        // Other errors
+        setError(`Signup failed: ${err.message}`);
+      }
     } finally {
       setLoading(false);
     }
